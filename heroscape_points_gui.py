@@ -5,23 +5,43 @@ from tkinter import ttk, scrolledtext, messagebox
 from PIL import Image, ImageTk
 import pathlib, joblib, pandas as pd, numpy as np, re, sys
 
-MODEL_PATH = pathlib.Path("heroscape_point_model.pkl")
-BG_PATH    = pathlib.Path("heroscape_bg.png")
-CSV_PATH   = pathlib.Path("heroscape_characters.csv")
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.metrics import mean_absolute_error, r2_score
+
+import sys
+import os
+
+
 
 TYPE_MAP = {0:"Unique Hero",1:"Common Hero",2:"Unique Squad",3:"Common Squad",4:"Event Hero"}
 TYPE_LABELS = list(TYPE_MAP.values())
 
 # ------------ load model ----------------
-if not MODEL_PATH.exists():
-    messagebox.showerror("Model missing", f"{MODEL_PATH} not found"); sys.exit(1)
+if hasattr(sys, '_MEIPASS'):
+    # Running in PyInstaller bundle
+    MODEL_PATH = os.path.join(sys._MEIPASS, "heroscape_point_model.pkl")
+    BG_PATH    = os.path.join(sys._MEIPASS, "heroscape_bg.png")
+    CSV_PATH   = os.path.join(sys._MEIPASS, "heroscape_characters.csv")
+else:
+    # Running in normal Python environment
+    MODEL_PATH = pathlib.Path("heroscape_point_model.pkl")
+    BG_PATH    = pathlib.Path("heroscape_bg.png")
+    CSV_PATH   = pathlib.Path("heroscape_characters.csv")
+
+# if not MODEL_PATH.exists():
+#     messagebox.showerror("Model missing", f"{MODEL_PATH} not found"); sys.exit(1)
 model = joblib.load(MODEL_PATH)
 
 # numeric list from pipeline, but we’ll add logHeight ourselves
 NUMERIC_COLS = ["Life","MVE","RGE","ATK","DEF","logHeight","NumUnits"]
 
 # ------------ dropdown choices ----------
-if CSV_PATH.exists():
+if CSV_PATH:
     df_src = pd.read_csv(CSV_PATH)
     if df_src["Type"].dtype != object:
         df_src["Type"] = df_src["Type"].map(TYPE_MAP)
@@ -49,7 +69,7 @@ def build_df(v):
 # ------------ GUI -----------------------
 root = tk.Tk(); root.title("HeroScape Point Predictor"); root.minsize(750,550)
 
-if BG_PATH.exists():
+if BG_PATH:
     raw = Image.open(BG_PATH); bg = ImageTk.PhotoImage(raw)
     lbl = tk.Label(root,image=bg); lbl.place(relwidth=1,relheight=1)
     def _res(ev):
