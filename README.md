@@ -1,5 +1,7 @@
 This program calculates an estimation for what a Unit/Squads point total should be. It utilizes ML and it is fairly accurate. There is a premade windows .exe program in the releases tab in github here: 
 
+https://github.com/random-retro-gaming-projects/Heroscape-Points-Estimator/releases/tag/v1
+
 Note: The following installation step require running at least these pip installs pip install pandas numpy scikit-learn joblib openpyxl pyinstaller
 
 To create windows .exe from heroscape_points_gui.py, in this directory: 
